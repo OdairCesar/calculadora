@@ -9,7 +9,7 @@ const initialState = {
     clearDisplay: false, // Limpar visor
     operation: null, // Qual operação será feita
     values: [0, 0], // Array para identificar quais será os valores a serem multiplicados, divididos, etc.
-    current: 0 // O resuldado da operação. Ele também sera colocado no primeiro indice do array para caso seja feita outras operações
+    current: 0 // Saber qual indice do array será utilizado
 }
 
 export default class Calculator extends Component{
@@ -30,7 +30,31 @@ export default class Calculator extends Component{
     }
 
     setOperation(operation){
-        console.log(operation)
+        
+        if (this.state.current === 0) {//se caso o array estiver somente com o indice 0 preenchi o sistem pede o sequindo valor
+            this.setState({ operation, current: 1, clearDisplay: true })
+        } else {//como o 'current' no sistema so tem dois valores (0 e 1) então se o corrent não tem com '0' e estara com '1', isso significa que esta tudo preparado para fazer a operação pedida 
+            
+            const equals = operation === '=' //caso ele queria terminar a opera o equals é true
+            const currentOperation = this.state.operation
+            
+            const values = [...this.state.values]
+            try {
+                values[0] = eval(`${values[0]} ${currentOperation} ${values[1]}`)//Fazendo a operação
+            } catch(e) {
+                values[0] = this.state.values[0]
+            }
+
+            values[1] = 0
+
+            this.setState({
+                displayValue: values[0],
+                operation: equals ? null : operation, //aqui usamos o equals da linha 38
+                current: equals ? 0 : 1,
+                clearDisplay: !equals,
+                values
+            })
+        }
     }
 
     addDigit(n){
@@ -43,14 +67,13 @@ export default class Calculator extends Component{
         const displayValue = currentValue + n
         this.setState({ displayValue, clearDisplay: false })
 
-        /** Adicionando o valor digitado no visor para o array e fazendo o tratamento correto desse numero*/
+        /** Adicionando o valor digitado no visor para o array (fazendo a logica para saber se o numero digitado vai no indice 0 ou 1) e fazendo o tratamento correto desse numero no*/
         if (n !== '.') {
             const i = this.state.current
             const newValue = parseFloat(displayValue)
             const values = [...this.state.values]
             values[i] = newValue
             this.setState({ values })
-            console.log(values)
         }
     }
 
@@ -73,7 +96,7 @@ export default class Calculator extends Component{
                 <Button label="1" click={this.addDigit}/>
                 <Button label="2" click={this.addDigit}/>
                 <Button label="3" click={this.addDigit}/>
-                <Button label="=" click={this.addDigit} operationB doubleRow/>
+                <Button label="=" click={this.setOperation} operationB doubleRow/>
                 <Button label="0" click={this.addDigit} doubleColumn/>
                 <Button label="." click={this.addDigit}/>
             </div>
