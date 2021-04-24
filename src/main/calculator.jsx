@@ -3,7 +3,19 @@ import './Calculator.css'
 import Button from '../components/Button'
 import Display from '../components/Display'
 
+/**Estado inicial da Calculdoura */
+const initialState = {
+    displayValue: '0', // Valor impresso no visor
+    clearDisplay: false, // Limpar visor
+    operation: null, // Qual operação será feita
+    values: [0, 0], // Array para identificar quais será os valores a serem multiplicados, divididos, etc.
+    current: 0 // O resuldado da operação. Ele também sera colocado no primeiro indice do array para caso seja feita outras operações
+}
+
 export default class Calculator extends Component{
+
+    
+    state = { ...initialState}// Adiciona o estado inicial (linhas 6 a 13) ao estado ja existente dessa classe
 
     constructor(props){
         super(props)
@@ -13,7 +25,8 @@ export default class Calculator extends Component{
     }
 
     clearMemory(){
-        console.log('limpar')
+        /** Volta para o estado inicial mostrado na linha 6 a 13.*/
+        this.setState({ ...initialState })
     }
 
     setOperation(operation){
@@ -21,14 +34,31 @@ export default class Calculator extends Component{
     }
 
     addDigit(n){
-        console.log(n)
+        /**Regras para evitar numeros faláciosos como: 58.24.8.9 (mais de um ponto no numero) e/ou 000005 (varios zeros no numero)*/
+        if (n === '.' && this.state.displayValue.includes('.')) {
+            return
+        }
+        const clearDisplay = this.state.displayValue === '0' || this.state.clearDisplay
+        const currentValue = clearDisplay ? '' : this.state.displayValue
+        const displayValue = currentValue + n
+        this.setState({ displayValue, clearDisplay: false })
+
+        /** Adicionando o valor digitado no visor para o array e fazendo o tratamento correto desse numero*/
+        if (n !== '.') {
+            const i = this.state.current
+            const newValue = parseFloat(displayValue)
+            const values = [...this.state.values]
+            values[i] = newValue
+            this.setState({ values })
+            console.log(values)
+        }
     }
 
     render(){
 
         return (
             <div className='calculator'>
-                <Display value='100' />
+                <Display value={this.state.displayValue} />
                 <Button label="AC" click={this.clearMemory} operationB doubleColumn/>
                 <Button label="/" click={this.setOperation} operation/>
                 <Button label="*" click={this.setOperation} operation/>
